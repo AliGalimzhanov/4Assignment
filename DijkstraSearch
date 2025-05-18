@@ -1,0 +1,174 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
+
+public class DijkstraSearch<V> {
+    private final WeightedGraph<V> graph;
+
+    public DijkstraSearch(WeightedGraph<V> graph) {
+        this.graph = graph;
+    }
+
+    public Map<V, Double> findShortestPaths(V start) {
+        Vertex<V> startVertex = graph.getVertex(start);
+        if (startVertex == null) {
+            throw new IllegalArgumentException("Start vertex not found in graph");
+        }
+
+        
+        Map<Vertex<V>, Double> distances = new HashMap<>();
+        Set<Vertex<V>> visited = new HashSet<>();
+
+        
+        PriorityQueue<VertexDistance<V>> pq = new PriorityQueue<>();
+
+        
+        for (Vertex<V> vertex : graph.getAllVertices()) {
+            if (vertex.equals(startVertex)) {
+                distances.put(vertex, 0.0);
+                pq.add(new VertexDistance<>(vertex, 0.0));
+            } else {
+                distances.put(vertex, Double.POSITIVE_INFINITY);
+                pq.add(new VertexDistance<>(vertex, Double.POSITIVE_INFINITY));
+            }
+        }
+
+       
+        while (!pq.isEmpty()) {
+            VertexDistance<V> current = pq.poll();
+            Vertex<V> currentVertex = current.vertex;
+
+            if (visited.contains(currentVertex)) {
+                continue;
+            }
+
+            visited.add(currentVertex);
+
+            for (Map.Entry<Vertex<V>, Double> neighbor : currentVertex.getAdjacentVertices().entrySet()) {
+                Vertex<V> neighborVertex = neighbor.getKey();
+                double weight = neighbor.getValue();
+
+                if (!visited.contains(neighborVertex)) {
+                    double distanceFromStart = distances.get(currentVertex) + weight;
+
+                    if (distanceFromStart < distances.get(neighborVertex)) {
+                        
+                        distances.put(neighborVertex, distanceFromStart);
+
+                        
+                        pq.add(new VertexDistance<>(neighborVertex, distanceFromStart));
+                    }
+                }
+            }
+        }
+
+        
+        Map<V, Double> result = new HashMap<>();
+        for (Map.Entry<Vertex<V>, Double> entry : distances.entrySet()) {
+            result.put(entry.getKey().getData(), entry.getValue());
+        }
+
+        return result;
+    }
+
+    public List<V> findShortestPath(V start, V end) {
+        Vertex<V> startVertex = graph.getVertex(start);
+        Vertex<V> endVertex = graph.getVertex(end);
+
+        if (startVertex == null || endVertex == null) {
+            throw new IllegalArgumentException("Start or end vertex not found in graph");
+        }
+
+        
+        Map<Vertex<V>, Double> distances = new HashMap<>();
+        Map<Vertex<V>, Vertex<V>> predecessors = new HashMap<>();
+        Set<Vertex<V>> visited = new HashSet<>();
+
+      
+        PriorityQueue<VertexDistance<V>> pq = new PriorityQueue<>();
+
+        
+        for (Vertex<V> vertex : graph.getAllVertices()) {
+            if (vertex.equals(startVertex)) {
+                distances.put(vertex, 0.0);
+                pq.add(new VertexDistance<>(vertex, 0.0));
+            } else {
+                distances.put(vertex, Double.POSITIVE_INFINITY);
+                pq.add(new VertexDistance<>(vertex, Double.POSITIVE_INFINITY));
+            }
+            predecessors.put(vertex, null);
+        }
+
+       
+        while (!pq.isEmpty()) {
+            VertexDistance<V> current = pq.poll();
+            Vertex<V> currentVertex = current.vertex;
+
+            if (currentVertex.equals(endVertex)) {
+                break; // Found destination
+            }
+
+            if (visited.contains(currentVertex)) {
+                continue;
+            }
+
+            visited.add(currentVertex);
+
+            for (Map.Entry<Vertex<V>, Double> neighbor : currentVertex.getAdjacentVertices().entrySet()) {
+                Vertex<V> neighborVertex = neighbor.getKey();
+                double weight = neighbor.getValue();
+
+                if (!visited.contains(neighborVertex)) {
+                    double distanceFromStart = distances.get(currentVertex) + weight;
+
+                    if (distanceFromStart < distances.get(neighborVertex)) {
+                        // Update distance and predecessor
+                        distances.put(neighborVertex, distanceFromStart);
+                        predecessors.put(neighborVertex, currentVertex);
+
+                        // Update in priority queue
+                        pq.add(new VertexDistance<>(neighborVertex, distanceFromStart));
+                    }
+                }
+            }
+        }
+
+        
+        List<V> path = new ArrayList<>();
+        Vertex<V> current = endVertex;
+
+        
+        if (predecessors.get(endVertex) == null && !startVertex.equals(endVertex)) {
+            return path; 
+        }
+
+        while (current != null) {
+            path.add(current.getData());
+            current = predecessors.get(current);
+        }
+
+        Collections.reverse(path);
+        return path;
+    }
+
+   
+    private static class VertexDistance<V> implements Comparable<VertexDistance<V>> {
+        private final Vertex<V> vertex;
+        private final double distance;
+
+        public VertexDistance(Vertex<V> vertex, double distance) {
+            this.vertex = vertex;
+            this.distance = distance;
+        }
+
+        @Override
+        public int compareTo(VertexDistance<V> other) {
+            return Double.compare(this.distance, other.distance);
+        }
+    }
+}
