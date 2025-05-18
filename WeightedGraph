@@ -21,11 +21,11 @@ public class WeightedGraph<V> {
     }
 
     public void addEdge(V source, V destination, double weight) {
-        // Get the source and destination vertices
+        
         Vertex<V> sourceVertex = getVertex(source);
         Vertex<V> destVertex = getVertex(destination);
 
-        // If vertices don't exist, create them
+        
         if (sourceVertex == null) {
             sourceVertex = addVertex(source);
         }
@@ -34,7 +34,7 @@ public class WeightedGraph<V> {
             destVertex = addVertex(destination);
         }
 
-        // Add the edge (one-way)
+       
         sourceVertex.addAdjacentVertex(destVertex, weight);
     }
 
