@@ -1,0 +1,72 @@
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+public class WeightedGraph<V> {
+    private Map<V, Vertex<V>> vertices;
+
+    public WeightedGraph() {
+        this.vertices = new HashMap<>();
+    }
+
+    public Vertex<V> addVertex(V data) {
+        Vertex<V> newVertex = new Vertex<>(data);
+        vertices.put(data, newVertex);
+        return newVertex;
+    }
+
+    public Vertex<V> getVertex(V data) {
+        return vertices.get(data);
+    }
+
+    public void addEdge(V source, V destination, double weight) {
+        // Get the source and destination vertices
+        Vertex<V> sourceVertex = getVertex(source);
+        Vertex<V> destVertex = getVertex(destination);
+
+        // If vertices don't exist, create them
+        if (sourceVertex == null) {
+            sourceVertex = addVertex(source);
+        }
+
+        if (destVertex == null) {
+            destVertex = addVertex(destination);
+        }
+
+        // Add the edge (one-way)
+        sourceVertex.addAdjacentVertex(destVertex, weight);
+    }
+
+    public void addBidirectionalEdge(V source, V destination, double weight) {
+        addEdge(source, destination, weight);
+        addEdge(destination, source, weight);
+    }
+
+    public Set<Vertex<V>> getAllVertices() {
+        return new HashSet<>(vertices.values());
+    }
+
+    public boolean hasVertex(V data) {
+        return vertices.containsKey(data);
+    }
+
+    public int size() {
+        return vertices.size();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Vertex<V> vertex : getAllVertices()) {
+            sb.append(vertex.getData()).append(" -> ");
+            Map<Vertex<V>, Double> neighbors = vertex.getAdjacentVertices();
+            for (Map.Entry<Vertex<V>, Double> neighbor : neighbors.entrySet()) {
+                sb.append(neighbor.getKey().getData())
+                        .append("(").append(neighbor.getValue()).append(") ");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+}
