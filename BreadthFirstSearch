@@ -1,0 +1,110 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.HashSet;
+
+public class BreadthFirstSearch<V> {
+    private WeightedGraph<V> graph;
+
+    public BreadthFirstSearch(WeightedGraph<V> graph) {
+        this.graph = graph;
+    }
+
+    public List<Vertex<V>> traverse(V start) {
+        Vertex<V> startVertex = graph.getVertex(start);
+        if (startVertex == null) {
+            throw new IllegalArgumentException("Start vertex not found in graph");
+        }
+
+        List<Vertex<V>> visited = new ArrayList<>();
+        Set<Vertex<V>> visitedSet = new HashSet<>();
+        Queue<Vertex<V>> queue = new LinkedList<>();
+
+      
+        queue.add(startVertex);
+        visitedSet.add(startVertex);
+
+        while (!queue.isEmpty()) {
+            Vertex<V> current = queue.poll();
+            visited.add(current);
+
+            
+            for (Vertex<V> neighbor : current.getAdjacentVertices().keySet()) {
+                if (!visitedSet.contains(neighbor)) {
+                    queue.add(neighbor);
+                    visitedSet.add(neighbor);
+                }
+            }
+        }
+
+        return visited;
+    }
+
+    public List<V> traverseValues(V start) {
+        List<Vertex<V>> vertices = traverse(start);
+        List<V> result = new ArrayList<>();
+
+        for (Vertex<V> vertex : vertices) {
+            result.add(vertex.getData());
+        }
+
+        return result;
+    }
+
+   
+    public List<V> findPath(V start, V end) {
+        Vertex<V> startVertex = graph.getVertex(start);
+        Vertex<V> endVertex = graph.getVertex(end);
+
+        if (startVertex == null || endVertex == null) {
+            throw new IllegalArgumentException("Start or end vertex not found in graph");
+        }
+
+        Map<Vertex<V>, Vertex<V>> parentMap = new HashMap<>();
+        Queue<Vertex<V>> queue = new LinkedList<>();
+        Set<Vertex<V>> visited = new HashSet<>();
+
+        
+        queue.add(startVertex);
+        visited.add(startVertex);
+
+        boolean found = false;
+
+        while (!queue.isEmpty() && !found) {
+            Vertex<V> current = queue.poll();
+
+            if (current.equals(endVertex)) {
+                found = true;
+                break;
+            }
+
+            
+            for (Vertex<V> neighbor : current.getAdjacentVertices().keySet()) {
+                if (!visited.contains(neighbor)) {
+                    queue.add(neighbor);
+                    visited.add(neighbor);
+                    parentMap.put(neighbor, current);
+                }
+            }
+        }
+
+        if (!found) {
+            return new ArrayList<>(); // No path found
+        }
+
+       
+        List<V> path = new ArrayList<>();
+        Vertex<V> current = endVertex;
+
+        while (current != null) {
+            path.add(0, current.getData()); // Add to the beginning of the list
+            current = parentMap.get(current);
+        }
+
+        return path;
+    }
+}
